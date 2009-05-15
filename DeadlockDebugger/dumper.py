@@ -15,23 +15,29 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 #
-# $Id: dumper.py,v 1.1 2005/02/23 15:35:21 fguillaume Exp $
-
 """Debug running threads
 
 ZServer hook to dump a traceback of the running python threads.
 """
-
+import os
 import thread
 import threadframe
 import traceback
-import time
+from datetime import datetime
 from cStringIO import StringIO
-
 from zLOG import LOG, DEBUG
 
 import custom
 
+LOAD_AVG = '/proc/loadavg'
+MEM_INFO = '/proc/meminfo'
+
+def _read_file(path):
+    f = open(path)
+    try:
+        return f.read().strip()
+    finally:
+        f.close()
 
 def dump_threads():
     """Dump running threads
@@ -40,8 +46,9 @@ def dump_threads():
     """
     frames = threadframe.dict()
     this_thread_id = thread.get_ident()
-    now = time.strftime("%Y-%m-%d %H:%M:%S")
-    res = ["Threads traceback dump at %s\n" % now]
+    res = ['Time %s' % datetime.now().isoformat(),
+           'Sysload %s' % _read_file(LOAD_AVG),
+           'Meminfo %s' % _read_file(MEM_INFO)]
     for thread_id, frame in frames.iteritems():
         if thread_id == this_thread_id:
             continue
@@ -55,15 +62,23 @@ def dump_threads():
                 co.co_filename.endswith('/ZPublisher/Publish.py')):
                 request = f.f_locals.get('request')
                 if request is not None:
-                    reqinfo = (request.get('REQUEST_METHOD', '') + ' ' +
-                               request.get('PATH_INFO', ''))
-                    qs = request.get('QUERY_STRING')
-                    if qs:
-                        reqinfo += '?'+qs
+                    method = request.get('REQUEST_METHOD', '')
+                    path = request.get('PATH_INFO', '')
+                    url = request.get('URL', '')
+                    agent = request.get('HTTP_USER_AGENT', '')
+                    query_string = request.get('QUERY_STRING')
+
+                    query = 'QUERY: %s %s' % (method, path_info)
+                    if query_string is not None:
+                        query += '?%s' % query_string
+                    requinfo.append(query)
+
+                # Add actual URL and user agent
+                reqinfo.append('URL: %s' % URL)
+                reqinfo.append('HTTP_USER_AGENT: %s' % AGENT)
+                reqinfo = '\n'.join(reqinfo)
                 break
             f = f.f_back
-        if reqinfo:
-            reqinfo = " (%s)" % reqinfo
 
         output = StringIO()
         traceback.print_stack(frame, file=output)
