@@ -27,7 +27,7 @@ setup(name='ZopeHealthWatcher',
       test_suite='nose.collector',
       entry_points = {
          "console_scripts": [
-            "zope_watcher = Products.DeadlockDebugger.check_zope:main",
+            "zope_watcher = Products.ZopeHealthWatcher.check_zope:main",
           ]}
       )
 
