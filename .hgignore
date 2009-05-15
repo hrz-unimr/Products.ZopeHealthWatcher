@@ -1,0 +1,8 @@
+.*egg$
+.*egg-info$
+^lib$
+^bin$
+^include$
+^\.Python$
+^\.hgignore$
+.*\.pyc

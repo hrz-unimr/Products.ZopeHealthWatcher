@@ -23,6 +23,8 @@ setup(name='ZopeHealthWatcher',
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
+      tests_require=['Nose'],
+      test_suite='nose.collector',
       entry_points = {
          "console_scripts": [
             "zope_watcher = Products.DeadlockDebugger.check_zope:main",
