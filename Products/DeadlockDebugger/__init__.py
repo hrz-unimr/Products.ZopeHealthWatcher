@@ -26,7 +26,19 @@ You MUST configure the file custom.py before use.
 """
 
 import custom
-from zLOG import LOG, INFO, ERROR
+
+try:
+    from zLOG import LOG, INFO, ERROR
+except ImportError:
+    INFO = 0
+    ERROR = 1
+    import logging
+    logger = logging.getLogger()
+    def LOG(title, level, msg):
+        if level == INFO:
+            logger.info('%s %s' % (title, msg))
+        else:
+            logger.error('%s %s' % (title, msg))
 
 try:
     import threadframe
@@ -42,3 +54,4 @@ else:
     else:
         import dumper
         LOG('DeadlockDebugger', INFO, "Installed")
+
