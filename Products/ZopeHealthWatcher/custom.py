@@ -11,7 +11,7 @@
 # should change the secret or filter this URL before it gets to Zope,
 # for instance in Apache.
 
-ACTIVATED = True
-SECRET = '1a1dc91c907325c69271ddf0c944bc72'
-DUMP_URL = '/__zhw'
+ACTIVATED = False
+SECRET = 'secret'
+DUMP_URL = '/manage_zhw'
 

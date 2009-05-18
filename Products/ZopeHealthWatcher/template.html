@@ -1,0 +1,41 @@
+<html>
+ <head>
+  <title>ZopeHealthWatcher</title>
+ </head>
+ <body>
+<h1>ZopeHealthWatcher</h1>
+
+<fieldset>
+  <legend>Infos</legend>
+ <ul>
+  %for title, value in modules :
+  <li>${title}: ${value}</li>
+  %endfor
+ </ul>
+</fieldset>
+
+ <fieldset>
+  <legend>Threads</legend>
+ %for thid, reqinfo, output in threads:
+  %if output is not None:
+  <div>
+   <h3 style="color: red">Thread ${thid} is busy</h3>
+   <ul>
+     %for info in reqinfo:
+      %if info:
+        <li>${info}</li>
+      %endif
+     %endfor
+   </ul>
+   <pre>${output}</pre>
+  %endif
+  %if output is None:
+  <h3 style="color: green">Thread ${thid} is sleeping</h3>
+  %endif
+  </div>
+ %endfor
+</legend>
+
+ </body>
+
+</html>
