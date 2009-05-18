@@ -38,33 +38,24 @@ except ImportError:
     LOG = _log
 
 import custom
+from modules import MODULES
 
-LOAD_AVG = '/proc/loadavg'
-MEM_INFO = '/proc/meminfo'
-
-def _read_file(path):
-    if not os.path.exists(path):
-        return ''
-    f = open(path)
-    try:
-        return f.read().strip()
-    finally:
-        f.close()
+def dump_modules():
+    return [mod() for mod in MODULES]
 
 def dump_threads():
     """Dump running threads
 
     Returns a string with the tracebacks.
     """
+    res = dump_modules()
+
     frames = threadframe.dict()
     this_thread_id = thread.get_ident()
-    res = ['Time %s' % datetime.now().isoformat(),
-           'Sysload %s' % _read_file(LOAD_AVG),
-           'Meminfo %s' % _read_file(MEM_INFO)]
+    res.append('***')
     for thread_id, frame in frames.iteritems():
         if thread_id == this_thread_id:
             continue
-
         # Find request in frame
         reqinfo = ''
         f = frame

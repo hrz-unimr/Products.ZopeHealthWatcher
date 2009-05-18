@@ -16,6 +16,7 @@ import custom
 OK = (0, 'OK - %s')
 WARNING = (1, 'WARNING - %s')
 FAILURE = (2, 'FAILURE - %s')
+CRITICAL = (3, 'CRITICAL - %s')
 
 def _(status, msg):
     return status[0], status[1] % msg
@@ -30,27 +31,25 @@ def _read_url(url):
 def query_zope(url):
     """Queries a Zope server"""
     data = _read_url(url)
-    threads = [line for line in data.split('\n')
-               if line.strip() != '']
 
-    # reading the headers
-    time = threads[0].split()
-    sysload = threads[1].split()
-    if len(sysload) == 1:
-        sysload = 'Not available'
-    else:
-        sysload = sysload[1]
-
-    meminfo = threads[2].split()
-    if len(meminfo) == 1:
-        meminfo = 'Not available'
-    else:
-        meminfo = meminfo[1]
+    lines = data.split('\n')
+    # reading the modules
+    modules = []
+    for index, line in enumerate(lines):
+        line = line.strip()
+        if line == '':
+            continue
+        if line == '***':
+            break
+        line = line.split()
+        name = line[0]
+        data = ' '.join(line[1:])
+        modules.append((name, data))
 
     # now reading the rest of the dump
     idle = 0
     busy = []
-    for line in threads[3:]:
+    for line in lines[index+1:]:
         line = line.strip()
         if line in ('', 'End of dump'):
             continue
@@ -63,20 +62,25 @@ def query_zope(url):
             busy.append((id, req_url, '\n'.join(sublines)))
         else:
             idle += 1
-    return time, sysload, meminfo, idle, busy
+    return modules, idle, busy
 
 def main():
     url = sys.argv[1]
     url = '%s%s?%s' % (url, custom.DUMP_URL, custom.SECRET)
-    state, msg = get_result(url)
-    print(msg)
-    sys.exit(state)
+    modules, state = get_result(url)
+    if len(modules) > 0:
+        print('Information:')
+    for name, value in modules:
+        print('\t%s %s' % (name, value))
+    print('')
+    print(state[1])
+    sys.exit(state[0])
 
 def get_result(url):
     try:
-        time, sysload, meminfo, idle, busy = query_zope(url)
+        modules, idle, busy = query_zope(url)
     except Exception, e:
-        return _(FAILURE, str(e))
+        return [], _(FAILURE, str(e))
 
     if idle == 0:
         state = _(CRITICAL, 'No more Zeo client available')
@@ -85,7 +89,7 @@ def get_result(url):
     else:
         state = _(OK, 'Everything looks fine')
 
-    return state
+    return modules, state
 
 if __name__ == "__main__":
     main()
