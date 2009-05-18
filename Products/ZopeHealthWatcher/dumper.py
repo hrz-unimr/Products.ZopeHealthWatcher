@@ -48,7 +48,7 @@ def dump_threads():
 
     Returns a string with the tracebacks.
     """
-    res = ['Dumping threads']
+    res = []
     frames = threadframe.dict()
     this_thread_id = thread.get_ident()
 
@@ -56,37 +56,41 @@ def dump_threads():
         if thread_id == this_thread_id:
             continue
         # Find request in frame
-        reqinfo = ''
+        reqinfo = ['']
         f = frame
         while f is not None:
             co = f.f_code
-            #if (co.co_name == 'publish' and
-            #    co.co_filename.endswith('/ZPublisher/Publish.py')):
-            request = f.f_locals.get('request')
-            if request is not None:
-                method = request.get('REQUEST_METHOD', '')
-                path = request.get('PATH_INFO', '')
-                url = request.get('URL', '')
-                agent = request.get('HTTP_USER_AGENT', '')
-                query_string = request.get('QUERY_STRING')
+            if co.co_filename.endswith('Publish.py'):
+                request = f.f_locals.get('request')
+                if request is not None:
+                    method = request.get('REQUEST_METHOD', '')
+                    path = request.get('PATH_INFO', '')
+                    url = request.get('URL', '')
+                    agent = request.get('HTTP_USER_AGENT', '')
+                    query_string = request.get('QUERY_STRING')
 
-                query = 'QUERY: %s %s' % (method, path_info)
-                if query_string is not None:
-                    query += '?%s' % query_string
+                    query = 'QUERY: %s %s' % (method, path)
+                    if query_string is not None:
+                        query += '?%s' % query_string
 
-                requinfo.append(query)
-
-                # Add actual URL and user agent
-                reqinfo.append('URL: %s' % URL)
-                reqinfo.append('HTTP_USER_AGENT: %s' % AGENT)
-                reqinfo = '\n'.join(reqinfo)
-                break
+                    reqinfo.append(query)
+                    reqinfo.append('URL: %s' % url)
+                    reqinfo.append('HTTP_USER_AGENT: %s' % agent)
+                    break
             f = f.f_back
 
         output = StringIO()
         traceback.print_stack(frame, file=output)
-        res.append("Thread %s%s:\n%s" %
-            (thread_id, reqinfo, output.getvalue()))
+        output = output.getvalue()
+
+        lines = [line.strip() for line in output.split('\n') if line.strip() != '']
+        zeo_marker = os.path.join('ZEO', 'zrpc', 'connection')
+        acquire_marker = 'l.acquire()'
+        if len(lines) > 1 and (zeo_marker in lines[-2] or acquire_marker in lines[-1]):
+            output = '  Not busy'
+
+        res.append("Thread %s\n%s\n%s\n\n" %
+            (thread_id, '\n'.join(reqinfo), output))
 
     res.append("End of dump")
     return res
@@ -101,6 +105,7 @@ def match(self, request):
     # added hook
     if uri == dump_url:
         dump = dump_modules()
+        dump.append('***')
         dump += dump_threads()
         request.channel.push('HTTP/1.0 200 OK\nContent-Type: text/plain\n\n')
         request.channel.push('\n'.join(dump))

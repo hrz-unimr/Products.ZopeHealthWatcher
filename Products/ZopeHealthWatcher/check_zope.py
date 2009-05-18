@@ -49,7 +49,7 @@ def query_zope(url):
     # now reading the rest of the dump
     idle = 0
     busy = []
-    for line in lines[index+1:]:
+    for line in lines[index+2:]:
         line = line.strip()
         if line in ('', 'End of dump'):
             continue
@@ -72,10 +72,11 @@ def main():
         print('Information:')
     for name, value in modules:
         print('\t%s %s' % (name, value))
-    print('')
-    print('Dump:')
-    print('\n'.join(dump))
-    print('')
+    if len(dump) > 0:
+        print('')
+        print('Dump:')
+        print('\n'.join(dump))
+        print('')
     print(state[1])
     sys.exit(state[0])
 
@@ -83,7 +84,7 @@ def get_result(url):
     try:
         modules, dump, idle, busy = query_zope(url)
     except Exception, e:
-        return [], _(FAILURE, str(e))
+        return [], '', _(FAILURE, str(e))
 
     if idle == 0:
         state = _(CRITICAL, 'No more Zeo client available')
