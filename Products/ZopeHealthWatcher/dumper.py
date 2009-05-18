@@ -25,6 +25,8 @@ import threadframe
 import traceback
 from datetime import datetime
 from cStringIO import StringIO
+from mako.template import Template
+
 try:
     from zLOG import LOG, DEBUG
 except ImportError:
@@ -87,12 +89,9 @@ def dump_threads():
         zeo_marker = os.path.join('ZEO', 'zrpc', 'connection')
         acquire_marker = 'l.acquire()'
         if len(lines) > 1 and (zeo_marker in lines[-2] or acquire_marker in lines[-1]):
-            output = '  Not busy'
+            output = None
 
-        res.append("Thread %s\n%s\n%s\n\n" %
-            (thread_id, '\n'.join(reqinfo), output))
-
-    res.append("End of dump")
+        res.append((thread_id, reqinfo, output))
     return res
 
 dump_url = custom.DUMP_URL
@@ -104,13 +103,37 @@ def match(self, request):
 
     # added hook
     if uri == dump_url:
-        dump = dump_modules()
-        dump.append('***')
-        dump += dump_threads()
-        request.channel.push('HTTP/1.0 200 OK\nContent-Type: text/plain\n\n')
-        request.channel.push('\n'.join(dump))
+        user_agent = request.get_header('User-Agent')
+        if user_agent == 'ZopeHealthController':
+            # text version
+            dump = ['%s %s' % (title, value) for title, value
+                    in dump_modules()]
+            dump.append('***')
+            for thread_id, reqinfo, output in dump_threads():
+                dump.append('Thread %s' % thread_id)
+                reqinfo = '\n'.join(reqinfo).strip()
+                if reqinfo != '':
+                    dump.append('%s' % reqinfo)
+                if output is None:
+                    output = 'not busy'
+                dump.append('%s' % output)
+
+            page = '\n'.join(dump)
+            content_type = 'text/plain'
+        else:
+            # html version
+            curdir = os.path.dirname(__file__)
+            template = os.path.join(curdir, 'template.html')
+            template = Template(open(template).read())
+            page = str(template.render(modules=dump_modules(),
+                                       threads=dump_threads()))
+            content_type = 'text/html'
+
+        request.channel.push('HTTP/1.0 200 OK\n')
+        request.channel.push('Content-Type: %s\n\n' % content_type)
+        request.channel.push(page)
         request.channel.close_when_done()
-        LOG('DeadlockDebugger', DEBUG, '\n'.join(dump))
+        LOG('DeadlockDebugger', DEBUG, '\n'.join(page))
         return 0
     # end hook
 

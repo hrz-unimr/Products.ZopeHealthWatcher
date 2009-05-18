@@ -14,13 +14,13 @@ def _read_file(path):
         f.close()
 
 def time():
-    return 'Time %s' % datetime.now().isoformat()
+    return ['Time', datetime.now().isoformat()]
 
 def sysload():
-    return 'Sysload %s' % _read_file(LOAD_AVG)
+    return ['Sysload', _read_file(LOAD_AVG)]
 
 def meminfo():
-    return 'Meminfo %s' % _read_file(MEM_INFO)
+    return ['Meminfo', _read_file(MEM_INFO)]
 
 MODULES = [time, sysload, meminfo]
 

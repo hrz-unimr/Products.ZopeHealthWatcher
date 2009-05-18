@@ -16,7 +16,8 @@ setup(name='ZopeHealthWatcher',
       namespace_packages=['Products'],
       install_requires=[
           'setuptools',
-          'threadframe'
+          'threadframe',
+          'Mako'
       ],
       classifiers=[
         "Framework :: Plone",
