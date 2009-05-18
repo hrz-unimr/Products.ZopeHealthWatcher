@@ -12,5 +12,6 @@
 # for instance in Apache.
 
 ACTIVATED = True
-SECRET = 'secret76' # you must change this
-DUMP_URL = '/manage_debug_threads'
+SECRET = '1a1dc91c907325c69271ddf0c944bc72'
+DUMP_URL = '/175076f9a90d14a4823d64c7728610ae'
+
