@@ -11,4 +11,4 @@
 ^\.hgignore$
 .*\.pyc
 ^\.installed.cfg$
-
+^var$

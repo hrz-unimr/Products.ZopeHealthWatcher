@@ -25,7 +25,17 @@ import threadframe
 import traceback
 from datetime import datetime
 from cStringIO import StringIO
-from zLOG import LOG, DEBUG
+try:
+    from zLOG import LOG, DEBUG
+except ImportError:
+    DEBUG = 1
+    import logging
+    def _log(title, level, msg):
+        if level == DEBUG:
+            logging.debug('%s %s' % (title, msg))
+        else:
+            logging.info('%s %s' % (title, msg))
+    LOG = _log
 
 import custom
 
@@ -33,6 +43,8 @@ LOAD_AVG = '/proc/loadavg'
 MEM_INFO = '/proc/meminfo'
 
 def _read_file(path):
+    if not os.path.exists(path):
+        return ''
     f = open(path)
     try:
         return f.read().strip()
@@ -111,5 +123,9 @@ def match(self, request):
     else:
         return 0
 
-from ZServer.HTTPServer import zhttp_handler
-zhttp_handler.match = match
+try:
+    from ZServer.HTTPServer import zhttp_handler
+    zhttp_handler.match = match
+except ImportError:
+    pass  # not in a zope environment
+

@@ -24,7 +24,6 @@ with tracebacks of the running python threads will be made.
 
 You MUST configure the file custom.py before use.
 """
-
 import custom
 
 try:

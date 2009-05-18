@@ -29,12 +29,22 @@ def _read_url(url):
 def query_zope(url):
     """Queries a Zope server"""
     data = _read_url(url)
-    threads = data.split('\n\n')
+    threads = [line for line in data.split('\n')
+               if line.strip() != '']
 
     # reading the headers
-    time = threads[0].split()[1]
-    sysload = threads[1].split()[1]
-    meminfo = threads[2].split()[1]
+    time = threads[0].split()
+    sysload = threads[1].split()
+    if len(sysload) == 1:
+        sysload = 'Not available'
+    else:
+        sysload = sysload[1]
+
+    meminfo = threads[2].split()
+    if len(meminfo) == 1:
+        meminfo = 'Not available'
+    else:
+        meminfo = meminfo[1]
 
     # now reading the rest of the dump
     idle = 0
@@ -44,12 +54,12 @@ def query_zope(url):
         if line in ('', 'End of dump'):
             continue
         sublines = line.split('\n')
-        elems = lines[0].split()
-        id = elems[1]
+        elems = sublines[0].split()
         if len(elems) > 2:
+            id = elems[1]
             req_url = '%s %s' % (elems[2], elems[3])
             req_url = req_url[1:-2]
-            busy.append((id, requrl, '\n'.join(lines)))
+            busy.append((id, req_url, '\n'.join(sublines)))
         else:
             idle += 1
     return time, sysload, meminfo, idle, busy

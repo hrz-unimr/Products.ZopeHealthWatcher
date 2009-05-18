@@ -11,6 +11,6 @@
 # should change the secret or filter this URL before it gets to Zope,
 # for instance in Apache.
 
-ACTIVATED = False
-SECRET = 'secret' # you must change this
+ACTIVATED = True
+SECRET = 'secret76' # you must change this
 DUMP_URL = '/manage_debug_threads'
