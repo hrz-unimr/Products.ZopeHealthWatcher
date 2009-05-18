@@ -1,8 +1,14 @@
 .*egg$
 .*egg-info$
 ^lib$
+^parts$
+^downloads$
+^eggs$
+^develop-eggs$ 
 ^bin$
 ^include$
 ^\.Python$
 ^\.hgignore$
 .*\.pyc
+^\.installed.cfg$
+
