@@ -48,11 +48,10 @@ def dump_threads():
 
     Returns a string with the tracebacks.
     """
-    res = dump_modules()
-
+    res = ['Dumping threads']
     frames = threadframe.dict()
     this_thread_id = thread.get_ident()
-    res.append('***')
+
     for thread_id, frame in frames.iteritems():
         if thread_id == this_thread_id:
             continue
@@ -61,20 +60,21 @@ def dump_threads():
         f = frame
         while f is not None:
             co = f.f_code
-            if (co.co_name == 'publish' and
-                co.co_filename.endswith('/ZPublisher/Publish.py')):
-                request = f.f_locals.get('request')
-                if request is not None:
-                    method = request.get('REQUEST_METHOD', '')
-                    path = request.get('PATH_INFO', '')
-                    url = request.get('URL', '')
-                    agent = request.get('HTTP_USER_AGENT', '')
-                    query_string = request.get('QUERY_STRING')
+            #if (co.co_name == 'publish' and
+            #    co.co_filename.endswith('/ZPublisher/Publish.py')):
+            request = f.f_locals.get('request')
+            if request is not None:
+                method = request.get('REQUEST_METHOD', '')
+                path = request.get('PATH_INFO', '')
+                url = request.get('URL', '')
+                agent = request.get('HTTP_USER_AGENT', '')
+                query_string = request.get('QUERY_STRING')
 
-                    query = 'QUERY: %s %s' % (method, path_info)
-                    if query_string is not None:
-                        query += '?%s' % query_string
-                    requinfo.append(query)
+                query = 'QUERY: %s %s' % (method, path_info)
+                if query_string is not None:
+                    query += '?%s' % query_string
+
+                requinfo.append(query)
 
                 # Add actual URL and user agent
                 reqinfo.append('URL: %s' % URL)
@@ -88,24 +88,24 @@ def dump_threads():
         res.append("Thread %s%s:\n%s" %
             (thread_id, reqinfo, output.getvalue()))
 
-    frames = None
     res.append("End of dump")
-    return '\n'.join(res)
+    return res
 
 dump_url = custom.DUMP_URL
 if custom.SECRET:
-    dump_url += '?'+custom.SECRET
+    dump_url += '?' + custom.SECRET
 
 def match(self, request):
     uri = request.uri
 
     # added hook
     if uri == dump_url:
-        dump = dump_threads()
+        dump = dump_modules()
+        dump += dump_threads()
         request.channel.push('HTTP/1.0 200 OK\nContent-Type: text/plain\n\n')
-        request.channel.push(dump)
+        request.channel.push('\n'.join(dump))
         request.channel.close_when_done()
-        LOG('DeadlockDebugger', DEBUG, dump)
+        LOG('DeadlockDebugger', DEBUG, '\n'.join(dump))
         return 0
     # end hook
 

@@ -62,23 +62,26 @@ def query_zope(url):
             busy.append((id, req_url, '\n'.join(sublines)))
         else:
             idle += 1
-    return modules, idle, busy
+    return modules, lines[index+1:], idle, busy
 
 def main():
     url = sys.argv[1]
     url = '%s%s?%s' % (url, custom.DUMP_URL, custom.SECRET)
-    modules, state = get_result(url)
+    modules, dump, state = get_result(url)
     if len(modules) > 0:
         print('Information:')
     for name, value in modules:
         print('\t%s %s' % (name, value))
+    print('')
+    print('Dump:')
+    print('\n'.join(dump))
     print('')
     print(state[1])
     sys.exit(state[0])
 
 def get_result(url):
     try:
-        modules, idle, busy = query_zope(url)
+        modules, dump, idle, busy = query_zope(url)
     except Exception, e:
         return [], _(FAILURE, str(e))
 
@@ -89,7 +92,7 @@ def get_result(url):
     else:
         state = _(OK, 'Everything looks fine')
 
-    return modules, state
+    return modules, dump, state
 
 if __name__ == "__main__":
     main()
