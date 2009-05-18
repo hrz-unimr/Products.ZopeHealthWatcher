@@ -13,6 +13,9 @@ where the problem is located.
 
 You can monitor it through your browser or through a console script.
 
+`ZopeHealthWatcher` is based on `DeadlockDebugger` code,
+see http://plone.org/products/deadlockdebugger.
+
 Installation
 ============
 
