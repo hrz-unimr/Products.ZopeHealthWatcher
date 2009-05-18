@@ -134,3 +134,6 @@ on the values entered in `custom.py`.
 
 Beware that this URL is not password protected.
 
+    .. image:: http://bitbucket.org/tarek/zopewatcher/raw/ca8cb8e237eb/ZHW.png
+
+
