@@ -11,6 +11,7 @@ import os
 import shutil
 import sys
 import urllib2
+import custom
 
 OK = (0, 'OK - %s')
 WARNING = (1, 'WARNING - %s')
@@ -56,8 +57,8 @@ def query_zope(url):
         sublines = line.split('\n')
         elems = sublines[0].split()
         if len(elems) > 2:
-            id = elems[1]
-            req_url = '%s %s' % (elems[2], elems[3])
+            id = elems[0]
+            req_url = '%s %s' % (elems[1], elems[2])
             req_url = req_url[1:-2]
             busy.append((id, req_url, '\n'.join(sublines)))
         else:
@@ -66,6 +67,7 @@ def query_zope(url):
 
 def main():
     url = sys.argv[1]
+    url = '%s%s?%s' % (url, custom.DUMP_URL, custom.SECRET)
     state, msg = get_result(url)
     print(msg)
     sys.exit(state)
