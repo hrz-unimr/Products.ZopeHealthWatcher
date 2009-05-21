@@ -43,15 +43,15 @@ the tool is activated::
 Usage
 =====
 
-There are two ways to query the tool: with the `zope_watcher` script or
+There are two ways to query the tool: with the `zope_health_watcher` script or
 through the browser.
 
-zope_watcher
-------------
+zope_health_watcher
+-------------------
 
-`zope_watcher` takes the root URL of the Zope server to run::
+`zope_health_watcher` takes the root URL of the Zope server to run::
 
-    $ zope_watcher http://localhost:8080
+    $ zope_health_watcher http://localhost:8080
     Idle: 4 Busy: 1
     OK - Everything looks fine
 
@@ -62,7 +62,7 @@ return some relevant infos like the time, the sysload (only linux),
 the memory information (only linux) and for each busy thread, the current
 stack of execution, the query, the url and the user agent::
 
-    $ zope_watcher http://localhost:8080
+    $ zope_health_watcher http://localhost:8080
     Information:
             Time 2009-05-18T18:23:34.415319
             Sysload
@@ -113,7 +113,7 @@ stack of execution, the query, the url and the user agent::
 
 If the server is down or unreachable, the script will return a failure::
 
-    $ bin/zope_watcher http://localhost:8080
+    $ bin/zope_health_watcher http://localhost:8080
     Idle: 0 Busy: 0
     FAILURE - [Errno socket error] (61, 'Connection refused')
 
@@ -135,5 +135,4 @@ on the values entered in `custom.py`.
 Beware that this URL is not password protected.
 
     .. image:: http://bitbucket.org/tarek/zopewatcher/raw/ca8cb8e237eb/ZHW.png
-
 

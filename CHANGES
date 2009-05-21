@@ -1,0 +1,13 @@
+0.2 - 2009-05-21
+================
+
+- Fixed the MANIFEST filelist.
+
+- renamed `zope_watcher` to `zope_health_watcher`
+
+
+0.1 - 2009-05-18
+================
+
+- Initial revision
+

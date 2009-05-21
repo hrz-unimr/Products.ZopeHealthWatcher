@@ -1,0 +1,4 @@
+include LICENSE.txt
+include README.txt
+include CHANGES
+recursive-include Products *.txt *.html *.py
