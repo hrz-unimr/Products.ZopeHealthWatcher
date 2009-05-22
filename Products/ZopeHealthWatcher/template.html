@@ -9,7 +9,7 @@
   <legend>Infos</legend>
  <ul>
   %for title, value in modules :
-  <li>${title}: ${value}</li>
+  <li><pre>${title}: ${value}</pre></li>
   %endfor
  </ul>
 </fieldset>
@@ -23,7 +23,7 @@
    <ul>
      %for info in reqinfo:
       %if info:
-        <li>${info}</li>
+        <li><pre>${info}</pre></li>
       %endif
      %endfor
    </ul>
