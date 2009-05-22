@@ -2,7 +2,8 @@
 ================
 
 - Added pre tags in the html version
-
+- Made the dump uri VHM-insensitive (which is OK 
+  with how acquisition works)
 
 0.2 - 2009-05-21
 ================

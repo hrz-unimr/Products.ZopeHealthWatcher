@@ -102,7 +102,7 @@ def match(self, request):
     uri = request.uri
 
     # added hook
-    if uri == dump_url:
+    if uri.endswith(dump_url):
         user_agent = request.get_header('User-Agent')
         if user_agent == 'ZopeHealthController':
             # text version
