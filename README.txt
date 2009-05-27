@@ -20,13 +20,20 @@ Installation
 ============
 
 If you run `zc.buildout`, add the ``ZopeHealthWatcher`` product into
-your buildout file. For instance in a Plone buildout ::
+your buildout file. 
+
+For example ::
 
     [buildout]
-    ...
-    eggs =
-        ZopeHealthWatcher
-    ...
+
+    parts =
+        zhw
+
+    [zhw]
+    recipe = zc.recipe.egg
+
+    eggs = ZopeHealthWatcher
+    scripts = zope_health_watcher
 
 You can also install it using `pip` or `easy_install`.
 
