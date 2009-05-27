@@ -27,6 +27,7 @@ setup(name='ZopeHealthWatcher',
         ],
       tests_require=['Nose'],
       test_suite='nose.collector',
+      include_package_data=True,
       entry_points = {
          "console_scripts": [
             "zope_health_watcher = Products.ZopeHealthWatcher.check_zope:main",
