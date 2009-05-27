@@ -42,15 +42,15 @@ except ImportError:
 try:
     import threadframe
 except ImportError:
-    LOG('DeadlockDebugger', ERROR, "Incorrectly installed threadframe module")
+    LOG('ZopeHealthWatcher', ERROR, "Incorrectly installed threadframe module")
 else:
     if not custom.ACTIVATED:
-        LOG('DeadlockDebugger', INFO,
+        LOG('ZopeHealthWatcher', INFO,
             "Not activated, you must change ACTIVATED in custom.py")
     elif custom.SECRET == 'secret':
-        LOG('DeadlockDebugger', ERROR,
+        LOG('ZopeHealthWatcher', ERROR,
             "Not activated, you must change SECRET in custom.py")
     else:
         import dumper
-        LOG('DeadlockDebugger', INFO, "Installed")
+        LOG('ZopeHealthWatcher', INFO, "Installed")
 

@@ -133,7 +133,7 @@ def match(self, request):
         request.channel.push('Content-Type: %s\n\n' % content_type)
         request.channel.push(page)
         request.channel.close_when_done()
-        LOG('DeadlockDebugger', DEBUG, '\n'.join(page))
+        LOG('ZopeHealthWatcher', DEBUG, '\n'.join(page))
         return 0
     # end hook
 
