@@ -6,7 +6,7 @@ README = os.path.join(os.path.dirname(__file__),
                       'README.txt')
 
 setup(name='ZopeHealthWatcher',
-      version='0.2',
+      version='0.3',
       description='Monitors A Zope server.',
       long_description=open(README).read(),
       author='Tarek Ziade',
