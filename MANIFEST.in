@@ -1,4 +1,7 @@
-include LICENSE.txt
-include README.txt
-include CHANGES
-recursive-include Products *.txt *.html *.py
+include LICENSE
+include README.rst
+include CHANGES.rst
+recursive-include docs *.rst 
+recursive-include src Products *.py
+recursive-exclude
+exclude *.egg-info

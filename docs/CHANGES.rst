@@ -1,3 +1,12 @@
+0.5.0 - 2015-04-12
+==================
+
+- Changes to work with Python 2.6/2.7 for Monitoring a Zope Instances for Plone 3.3 - Plone 5
+- Change Packet Structure
+- renamed zope_health_watcher Script to zHealthWatcher
+- 
+
+
 0.3 - 2009-05-27
 ================
 

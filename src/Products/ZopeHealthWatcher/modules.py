@@ -1,26 +1,30 @@
 from datetime import datetime
 import os
+import sys
 
-LOAD_AVG = '/proc/loadavg'
 MEM_INFO = '/proc/meminfo'
+
 
 def _read_file(path):
     if not os.path.exists(path):
         return ''
-    f = open(path)
-    try:
+    with open(path) as f:
         return f.read().strip()
-    finally:
-        f.close()
+
 
 def time():
     return ['Time', datetime.now().isoformat()]
 
+
+def threads():
+    return ['Number of Worker Threads', str(len(sys._current_frames()) - 1)]
+
+
 def sysload():
-    return ['Sysload', _read_file(LOAD_AVG)]
+    return ['Sysload', os.getloadavg()]
+
 
 def meminfo():
     return ['Meminfo', _read_file(MEM_INFO)]
 
-MODULES = [time, sysload, meminfo]
-
+MODULES = [time, threads, sysload, meminfo]

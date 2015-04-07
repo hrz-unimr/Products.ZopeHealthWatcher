@@ -20,30 +20,25 @@
 ZServer hook to dump a traceback of the running python threads.
 """
 import os
+import sys
 import thread
-import threadframe
 import traceback
-from datetime import datetime
 from cStringIO import StringIO
 from mako.template import Template
 
-try:
-    from zLOG import LOG, DEBUG
-except ImportError:
-    DEBUG = 1
-    import logging
-    def _log(title, level, msg):
-        if level == DEBUG:
-            logging.debug('%s %s' % (title, msg))
-        else:
-            logging.info('%s %s' % (title, msg))
-    LOG = _log
 
-import custom
-from modules import MODULES
+from Products.ZopeHealthWatcher.check_zope import config
+from Products.ZopeHealthWatcher.modules import MODULES
+from Products.ZopeHealthWatcher.zhw_logger import LOG
+from Products.ZopeHealthWatcher.zhw_logger import DEBUG
+#from Products.ZopeHealthWatcher.zhw_logger import Info
+#from Products.ZopeHealthWatcher.zhw_logger import WARNING
+#from Products.ZopeHealthWatcher.zhw_logger import ERROR
+
 
 def dump_modules():
     return [mod() for mod in MODULES]
+
 
 def dump_threads():
     """Dump running threads
@@ -51,7 +46,11 @@ def dump_threads():
     Returns a string with the tracebacks.
     """
     res = []
-    frames = threadframe.dict()
+    frames = sys._current_frames()
+    LOG('Products.ZopeHealthWatcher', DEBUG,
+        'Number of Threads: %s' % str(len(frames) - 1))
+    # if Number of Threads == 0, then the Zope instance
+    # hadn't handled any request
     this_thread_id = thread.get_ident()
 
     for thread_id, frame in frames.iteritems():
@@ -94,17 +93,15 @@ def dump_threads():
         res.append((thread_id, reqinfo, output))
     return res
 
-dump_url = custom.DUMP_URL
-if custom.SECRET:
-    dump_url += '?' + custom.SECRET
 
 def match(self, request):
     uri = request.uri
 
     # added hook
-    if uri.endswith(dump_url):
+    if uri.endswith(config.SDUMP_URL):
         user_agent = request.get_header('User-Agent')
         if user_agent == 'ZopeHealthController':
+            # CLI Request from zHealthWatcher Script
             # text version
             dump = ['%s %s' % (title, value) for title, value
                     in dump_modules()]
@@ -133,7 +130,7 @@ def match(self, request):
         request.channel.push('Content-Type: %s\n\n' % content_type)
         request.channel.push(page)
         request.channel.close_when_done()
-        LOG('ZopeHealthWatcher', DEBUG, '\n'.join(page))
+        LOG('Products.ZopeHealthWatcher', DEBUG, '\n'.join(page))
         return 0
     # end hook
 
@@ -141,10 +138,3 @@ def match(self, request):
         return 1
     else:
         return 0
-
-try:
-    from ZServer.HTTPServer import zhttp_handler
-    zhttp_handler.match = match
-except ImportError:
-    pass  # not in a zope environment
-
