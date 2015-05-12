@@ -2,6 +2,6 @@ include LICENSE
 include README.rst
 include CHANGES.rst
 recursive-include docs *.rst 
-recursive-include src Products *.py
-recursive-exclude
+recursive-include src *.py
+recursive-exclude . *.pyc *.pyo *.egg-info
 exclude *.egg-info
