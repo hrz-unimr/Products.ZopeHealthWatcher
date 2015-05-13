@@ -1,6 +1,7 @@
 .*egg
 .egg
 *.egg-info/
+*.pyc
 lib/
 parts/
 downloads/
