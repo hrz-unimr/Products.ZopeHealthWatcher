@@ -38,5 +38,16 @@
     </div>
     %endfor
   </fieldset>
+  <fieldset>
+    <legend>Status</legend>
+    %if msg.startswith('OK'):
+       <h3 class="green">
+    %endif
+    %if msg.startswith('CRITCAL'):
+       <h3 class="red">
+    %endif
+         ${msg}
+      </h3>
+  </fieldset>
 </body>
 </html>

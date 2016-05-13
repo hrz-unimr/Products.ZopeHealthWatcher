@@ -25,15 +25,57 @@ import thread
 import traceback
 from cStringIO import StringIO
 from mako.template import Template
-
+import json
+import ZServer.PubCore
 
 from Products.ZopeHealthWatcher.check_zope import config
 from Products.ZopeHealthWatcher.modules import MODULES
 from Products.ZopeHealthWatcher.zhw_logger import LOG
 from Products.ZopeHealthWatcher.zhw_logger import DEBUG
-#from Products.ZopeHealthWatcher.zhw_logger import Info
 #from Products.ZopeHealthWatcher.zhw_logger import WARNING
 #from Products.ZopeHealthWatcher.zhw_logger import ERROR
+
+lock = thread.allocate_lock()
+_thread_info = {}
+
+
+def zthread_stats():
+
+    # Idea adopted from
+    # https://github.com/RedTurtle/munin.zope/\
+    #    blob/master/src/munin/zope/browser.py
+    if ZServer.PubCore._handle is not None:
+        handler_lists = ZServer.PubCore._handle.im_self._lists
+    else:
+        handler_lists = ((), (), ())
+        # Check the ZRendevous __init__ for the definitions below
+    busy_count, request_queue_count, free_count = [
+        len(l) for l in handler_lists
+        ]
+
+    frames = sys._current_frames()
+    this_thread_id = thread.get_ident()
+
+    lock.acquire()
+    try:
+        for thread_id, frame in frames.iteritems():
+            if this_thread_id == thread_id:
+                continue
+            _thread_info[thread_id] = 1
+    finally:
+        lock.release()
+
+    total_threads = len(frames) - 1
+    zombie_count = len(_thread_info) - total_threads
+
+    res = {'total_threads': total_threads,
+           'zombie_count': zombie_count,
+           'busy_count': busy_count,
+           'request_queue_count': request_queue_count,
+           'free_count': free_count
+           }
+
+    return res
 
 
 def dump_modules():
@@ -84,10 +126,12 @@ def dump_threads():
         traceback.print_stack(frame, file=output)
         output = output.getvalue()
 
-        lines = [line.strip() for line in output.split('\n') if line.strip() != '']
+        lines = [line.strip() for line in output.split('\n')
+                 if line.strip() != '']
         zeo_marker = os.path.join('ZEO', 'zrpc', 'connection')
         acquire_marker = 'l.acquire()'
-        if len(lines) > 1 and (zeo_marker in lines[-2] or acquire_marker in lines[-1]):
+        if len(lines) > 1 and (zeo_marker in lines[-2] or
+                               acquire_marker in lines[-1]):
             output = None
 
         res.append((thread_id, reqinfo, output))
@@ -98,40 +142,62 @@ def match(self, request):
     uri = request.uri
 
     # added hook
-    if uri.endswith(config.SDUMP_URL):
-        user_agent = request.get_header('User-Agent')
-        if user_agent == 'ZopeHealthController':
-            # CLI Request from zHealthWatcher Script
-            # text version
-            dump = ['%s %s' % (title, value) for title, value
-                    in dump_modules()]
-            dump.append('***')
-            for thread_id, reqinfo, output in dump_threads():
-                dump.append('Thread %s' % thread_id)
-                reqinfo = '\n'.join(reqinfo).strip()
-                if reqinfo != '':
-                    dump.append('%s' % reqinfo)
-                if output is None:
-                    output = 'not busy'
-                dump.append('%s' % output)
+    if uri.startswith(config.DUMP_URL):
+        page = ''
+        stats = zthread_stats()
+        total_threads = stats['total_threads']
+        busy_count = stats['busy_count']
+        zombie_count = stats['zombie_count']
 
-            page = '\n'.join(dump)
-            content_type = 'text/plain'
+        if total_threads:
+            if busy_count < total_threads:
+                msg = 'OK - %s/%s thread(s) are working (ready)' %\
+                    (busy_count, total_threads)
+                error_code = '200 OK'
+            elif busy_count == total_threads:
+                msg = 'CRITICAL - %s/%s thread(s) are working (busy)' %\
+                    (busy_count, total_threads)
+                error_code = '404 Not Found'
+        elif zombie_count > 0:
+            msg = 'CRITICAL - %s/%s thread(s) died unexpectedly\n' %\
+                (zombie_count, zombie_count + total_threads)
+            error_code = '500 Internal Server Error'
         else:
-            # html version
-            curdir = os.path.dirname(__file__)
-            template = os.path.join(curdir, 'template.html')
-            template = Template(open(template).read())
-            page = str(template.render(modules=dump_modules(),
-                                       threads=dump_threads()))
-            content_type = 'text/html'
+            msg = 'OK - zope is listening'
+            error_code = '200 OK'
 
-        request.channel.push('HTTP/1.0 200 OK\n')
+        # default content_type
+        content_type = 'text/plain'
+
+        # verbose output if authenticated
+        if uri.endswith(config.SDUMP_URL):
+            user_agent = request.get_header('User-Agent')
+            if user_agent == 'ZopeHealthController':
+                info = {'modules': dump_modules(),
+                        'threads': dump_threads(),
+                        'stats': stats
+                        }
+                page = json.dumps(info)
+                content_type = 'application/json'
+            else:
+                # html version
+                curdir = os.path.dirname(__file__)
+                template = os.path.join(curdir, 'template.html')
+                template = Template(open(template).read())
+                page = str(template.render(modules=dump_modules(),
+                                           threads=dump_threads(),
+                                           msg=msg))
+                content_type = 'text/html'
+
+            LOG('Products.ZopeHealthWatcher', DEBUG, page)
+
+        request.channel.push('HTTP/1.0 %s\n' % (error_code,))
         request.channel.push('Content-Type: %s\n\n' % content_type)
-        request.channel.push(page)
+        if page:
+            request.channel.push(page)
         request.channel.close_when_done()
-        LOG('Products.ZopeHealthWatcher', DEBUG, '\n'.join(page))
         return 0
+
     # end hook
 
     if self.uri_regex.match(uri):

@@ -33,7 +33,7 @@ from Products.ZopeHealthWatcher.dumper import match
 if not config.SECRET:
     LOG('Products.ZopeHealthWatcher', ERROR,
         """Not activated, you must set a SECRET in a
-file zopehealthwatcher.ini in your working directory.
+file zopehealthwatcher.ini in your working directory of your zope instance.
 
 The File should look like this:
 

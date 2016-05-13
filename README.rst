@@ -19,7 +19,7 @@ see http://plone.org/products/deadlockdebugger.
 Installation
 ============
 
-If you run `zc.buildout`, add the ``ZopeHealthWatcher`` product into
+If you run `zc.buildout`, add the ``Products.ZopeHealthWatcher`` product into
 your buildout file. 
 
 For example ::
@@ -32,35 +32,34 @@ For example ::
     [zhw]
     recipe = zc.recipe.egg
 
-    eggs = ZopeHealthWatcher
-    scripts = zope_health_watcher
+    eggs = Products.ZopeHealthWatcher
+    scripts = zHealthWatcher
 
 You can also install it using `pip` or `easy_install`.
 
 Configuration
 =============
 
-Once the package is installed, open the ``custom.py`` module located in
-`ZopeHealthWatcher` and change ``ACTIVATED`` and ``SECRET`` values, so
+Once the package is installed, create the config file ``zopehealthwatcher.ini`` module located in
+directory of the zope instance and add following lines, so
 the tool is activated::
 
-    ACTIVATED = True
-    SECRET = 'MySuperPass'
+    [ZopeHealthWatcher]
+    SECRET=secret
 
 Usage
 =====
 
-There are two ways to query the tool: with the `zope_health_watcher` script or
+There are two ways to query the tool: with the `zHealthWatcher` script or
 through the browser.
 
-zope_health_watcher
+zHealthWatcher
 -------------------
 
-`zope_health_watcher` takes the root URL of the Zope server to run::
+`zHealthWatcher` takes the root URL of the Zope server to run::
 
-    $ zope_health_watcher http://localhost:8080
-    Idle: 4 Busy: 1
-    OK - Everything looks fine
+    $ zHealthWatcher http://localhost:8080
+    OK - 0/4 thread(s) are working (ready)
 
 It will return the number of idling and busy threads.
 
@@ -69,7 +68,7 @@ return some relevant infos like the time, the sysload (only linux),
 the memory information (only linux) and for each busy thread, the current
 stack of execution, the query, the url and the user agent::
 
-    $ zope_health_watcher http://localhost:8080
+    $ zHealthWatcher http://localhost:8080
     Information:
             Time 2009-05-18T18:23:34.415319
             Sysload
@@ -115,22 +114,20 @@ stack of execution, the query, the url and the user agent::
         ...
         roles = getRoles(container, name, value, _noroles)
 
-    Idle: 1 Busy: 4
-    WARNING - Warning, high load
+    WARNING - 4/5 thread(s) are working (high load)
 
 If the server is down or unreachable, the script will return a failure::
 
     $ bin/zope_health_watcher http://localhost:8080
-    Idle: 0 Busy: 0
     FAILURE - [Errno socket error] (61, 'Connection refused')
 
-`zope_watcher` is also returning the right exit codes, so it can
+`zHealthWatcher` is also returning the right exit codes, so it can
 be used by third party programs like Nagios:
 
 - OK = 0
 - WARNING = 1
 - FAILURE = 2
-- CRITICAL =3
+- CRITICAL = 3
 
 web access
 ----------
