@@ -9,11 +9,12 @@
 """
 import sys
 import json
-from ConfigParser import SafeConfigParser
-from urllib import FancyURLopener
+import logging
 
-from Products.ZopeHealthWatcher.zhw_logger import DEBUG
-from Products.ZopeHealthWatcher.zhw_logger import LOG
+from urllib import FancyURLopener
+from Products.ZopeHealthWatcher.config import zhw_config
+
+log = logging.getLogger('zHealthWatcher')
 
 OK = (0, 'OK - %s')
 WARNING = (1, 'WARNING - %s')
@@ -23,18 +24,6 @@ CRITICAL = (3, 'CRITICAL - %s')
 
 class ZHCOpener(FancyURLopener):
     version = 'ZopeHealthController'
-
-
-class ZopeHealthWatcherConfig(object):
-
-    def __init__(self):
-        parser = SafeConfigParser()
-        parser.read('zopehealthwatcher.ini')
-        self.SECRET = parser.get('ZopeHealthWatcher', 'SECRET')
-        self.DUMP_URL = '/manage_zhw'
-        self.SDUMP_URL = self.DUMP_URL + '?' + self.SECRET
-
-config = ZopeHealthWatcherConfig()
 
 
 def _read_url(url):
@@ -83,10 +72,10 @@ def get_result(url):
 
 
 def main():
-    url = sys.argv[1] + config.DUMP_URL
-    LOG('Products.ZopeHealthWatcher', DEBUG, 'Call URL: "%s"' % url)
-    if config.SECRET:
-        url = sys.argv[1] + config.SDUMP_URL
+    url = sys.argv[1] + zhw_config.DUMP_URL
+    log.debug('Call URL: "%s"' % url)
+    if zhw_config.SECRET:
+        url = sys.argv[1] + zhw_config.SDUMP_URL
     info, state = get_result(url)
     modules = info['modules']
     threads = info['threads']

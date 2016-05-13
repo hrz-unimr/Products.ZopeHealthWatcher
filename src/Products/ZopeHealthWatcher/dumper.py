@@ -23,18 +23,18 @@ import os
 import sys
 import thread
 import traceback
+import logging
+import json
+
 from cStringIO import StringIO
 from mako.template import Template
-import json
+
 import ZServer.PubCore
 
-from Products.ZopeHealthWatcher.check_zope import config
+from Products.ZopeHealthWatcher.config import zhw_config
 from Products.ZopeHealthWatcher.modules import MODULES
-from Products.ZopeHealthWatcher.zhw_logger import LOG
-from Products.ZopeHealthWatcher.zhw_logger import DEBUG
-#from Products.ZopeHealthWatcher.zhw_logger import WARNING
-#from Products.ZopeHealthWatcher.zhw_logger import ERROR
 
+log = logging.getLogger('Products.ZopeHealthWatcher')
 lock = thread.allocate_lock()
 _thread_info = {}
 
@@ -58,7 +58,7 @@ def zthread_stats():
 
     lock.acquire()
     try:
-        for thread_id, frame in frames.iteritems():
+        for thread_id in frames.iterkeys():
             if this_thread_id == thread_id:
                 continue
             _thread_info[thread_id] = 1
@@ -89,8 +89,7 @@ def dump_threads():
     """
     res = []
     frames = sys._current_frames()
-    LOG('Products.ZopeHealthWatcher', DEBUG,
-        'Number of Threads: %s' % str(len(frames) - 1))
+    log.debug('Number of Threads: %s' % str(len(frames) - 1))
     # if Number of Threads == 0, then the Zope instance
     # hadn't handled any request
     this_thread_id = thread.get_ident()
@@ -142,7 +141,7 @@ def match(self, request):
     uri = request.uri
 
     # added hook
-    if uri.startswith(config.DUMP_URL):
+    if uri.startswith(zhw_config.DUMP_URL):
         page = ''
         stats = zthread_stats()
         total_threads = stats['total_threads']
@@ -170,7 +169,7 @@ def match(self, request):
         content_type = 'text/plain'
 
         # verbose output if authenticated
-        if uri.endswith(config.SDUMP_URL):
+        if uri.endswith(zhw_config.SDUMP_URL):
             user_agent = request.get_header('User-Agent')
             if user_agent == 'ZopeHealthController':
                 info = {'modules': dump_modules(),
@@ -189,7 +188,7 @@ def match(self, request):
                                            msg=msg))
                 content_type = 'text/html'
 
-            LOG('Products.ZopeHealthWatcher', DEBUG, page)
+            log.debug(page)
 
         request.channel.push('HTTP/1.0 %s\n' % (error_code,))
         request.channel.push('Content-Type: %s\n\n' % content_type)

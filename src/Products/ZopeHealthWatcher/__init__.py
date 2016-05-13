@@ -22,33 +22,16 @@
 This adds a ZServer hook so that if a special URL is called, a full dump
 with tracebacks of the running python threads will be made.
 """
-from Products.ZopeHealthWatcher.check_zope import config
-from Products.ZopeHealthWatcher.zhw_logger import LOG
-#from Products.ZopeHealthWatcher.zhw_logger import DEBUG
-from Products.ZopeHealthWatcher.zhw_logger import INFO
-from Products.ZopeHealthWatcher.zhw_logger import ERROR
-from Products.ZopeHealthWatcher.dumper import match
+import logging
+from Products.ZopeHealthWatcher.config import zhw_config
 
+log = logging.getLogger('Products.ZopeHealthWatcher')
 
-if not config.SECRET:
-    LOG('Products.ZopeHealthWatcher', ERROR,
-        """Not activated, you must set a SECRET in a
-file zopehealthwatcher.ini in your working directory of your zope instance.
-
-The File should look like this:
-
-[ZopeHealthWatcher]
-SECRET = SECRET
-""")
-#elif not config.num_of_threads:
-#    LOG('Products.ZopeHealthWatcher', ERROR,
-#        """Not activated, No Zope Threads found to watch.""")
-else:
-    LOG('Products.ZopeHealthWatcher',
-        INFO,
-        "Installed & Activated")
+if zhw_config:
     try:
+        from Products.ZopeHealthWatcher.dumper import match
         from ZServer.HTTPServer import zhttp_handler
         zhttp_handler.match = match
+        log.info('Installed & Activated')
     except ImportError:
         pass  # not in a zope environment
