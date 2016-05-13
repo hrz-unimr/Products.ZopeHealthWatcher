@@ -118,7 +118,7 @@ stack of execution, the query, the url and the user agent::
 
 If the server is down or unreachable, the script will return a failure::
 
-    $ bin/zope_health_watcher http://localhost:8080
+    $ zHealthWatcher http://localhost:8080
     FAILURE - [Errno socket error] (61, 'Connection refused')
 
 `zHealthWatcher` is also returning the right exit codes, so it can
@@ -134,7 +134,7 @@ web access
 
 An HTML version is accessible through the web, using the url
 `http://host:port/manage_zhw?secret`. This url has to be changed depending
-on the values entered in `custom.py`.
+on the values entered in `zopehealthwatcher.ini`.
 
 Beware that this URL is not password protected.
 
