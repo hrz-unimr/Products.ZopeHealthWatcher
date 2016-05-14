@@ -23,15 +23,14 @@ This adds a ZServer hook so that if a special URL is called, a full dump
 with tracebacks of the running python threads will be made.
 """
 import logging
-from Products.ZopeHealthWatcher.config import zhw_config
 
 log = logging.getLogger('Products.ZopeHealthWatcher')
 
-if zhw_config:
-    try:
-        from Products.ZopeHealthWatcher.dumper import match
-        from ZServer.HTTPServer import zhttp_handler
-        zhttp_handler.match = match
-        log.info('Installed & Activated')
-    except ImportError:
-        pass  # not in a zope environment
+
+try:
+    from ZServer.HTTPServer import zhttp_handler
+    from Products.ZopeHealthWatcher.dumper import match
+    zhttp_handler.match = match
+    log.info('Installed & Activated')
+except ImportError:
+    pass  # not in a zope environment

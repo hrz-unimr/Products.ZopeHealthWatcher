@@ -14,8 +14,6 @@ import logging
 from urllib import FancyURLopener
 from Products.ZopeHealthWatcher.config import zhw_config
 
-log = logging.getLogger('zHealthWatcher')
-
 OK = (0, 'OK - %s')
 WARNING = (1, 'WARNING - %s')
 FAILURE = (2, 'FAILURE - %s')
@@ -40,7 +38,7 @@ def get_result(url):
         jdata = _read_url(url)
         info = json.loads(jdata)
     except Exception, e:
-        return [], '', 0, 0, _(FAILURE, str(e))
+        return {}, _(FAILURE, str(e))
 
     stats = info['stats']
 
@@ -73,16 +71,17 @@ def get_result(url):
 
 def main():
     url = sys.argv[1] + zhw_config.DUMP_URL
-    log.debug('Call URL: "%s"' % url)
+    logging.debug('Call URL: "%s"' % url)
     if zhw_config.SECRET:
         url = sys.argv[1] + zhw_config.SDUMP_URL
     info, state = get_result(url)
-    modules = info['modules']
-    threads = info['threads']
 
     # only if state != 0
     if state[0] != FAILURE[0]:
         if True or state[0] != OK[0]:
+            modules = info['modules']
+            threads = info['threads']
+
             if len(modules) > 0:
                 print('Information:')
             for name, value in modules:

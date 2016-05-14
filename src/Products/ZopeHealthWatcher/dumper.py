@@ -30,13 +30,17 @@ from cStringIO import StringIO
 from mako.template import Template
 
 import ZServer.PubCore
-
-from Products.ZopeHealthWatcher.config import zhw_config
 from Products.ZopeHealthWatcher.modules import MODULES
 
 log = logging.getLogger('Products.ZopeHealthWatcher')
 lock = thread.allocate_lock()
 _thread_info = {}
+
+try:
+    from Products.ZopeHealthWatcher.config import zhw_config
+except ImportError as e:
+    log.error(e)
+    raise ImportError(e)
 
 
 def zthread_stats():
@@ -187,7 +191,8 @@ def match(self, request):
                                            threads=dump_threads(),
                                            msg=msg))
                 content_type = 'text/html'
-
+            # regular request with content
+            error_code = '200 OK'
             log.debug(page)
 
         request.channel.push('HTTP/1.0 %s\n' % (error_code,))
