@@ -150,21 +150,18 @@ not password protected url `http://host:port/manage_zhw` can simply used
 web frontends like nginx, varnish or haproxy. The availability of a
 zope server is encoded in the http response of the url::
 
-If the server is idle, it will return
-
-    $ curl  -I  http://localhost:8080/manage_zhw
+    If the server is idle, it will return
+    $ curl -I  http://localhost:8080/manage_zhw
     HTTP/1.0 200 OK
     ...
 
-If the server is busy, it will return
-
-    $ curl  -I  http://localhost:8080/manage_zhw
+    If the server is busy, it will return
+    $ curl -I  http://localhost:8080/manage_zhw
     HTTP/1.0 404 Not Found
     ...
 
-If the server has zombie threads, it will return
-
-    $ curl  -I  http://localhost:8080/manage_zhw
+    If the server has zombie threads, it will return
+    $ curl -I  http://localhost:8080/manage_zhw
     HTTP/1.0 500 Internal Server Error
     ...
 
