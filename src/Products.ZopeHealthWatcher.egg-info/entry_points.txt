@@ -1,3 +1,0 @@
-[console_scripts]
-zHealthWatcher = Products.ZopeHealthWatcher.check_zope:main
-
