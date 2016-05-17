@@ -50,8 +50,7 @@ the tool is activated::
 Usage
 =====
 
-There are two ways to query the tool: with the `zHealthWatcher` script or
-through the browser.
+There are three ways to query the tool: with the `zHealthWatcher` script, through the browser or http based health check clients.
 
 zHealthWatcher
 -------------------
@@ -139,4 +138,33 @@ on the values entered in `zopehealthwatcher.ini`.
 Beware that this URL is not password protected.
 
     .. image:: http://bitbucket.org/tarek/zopewatcher/raw/ca8cb8e237eb/ZHW.png
+
+health checking
+---------------
+
+In general, before performing traffic by a load balancer forwarding to
+backend servers, it is recommended to tell the load balancer to check
+the health of the service hosted by each servers of a farm. Using the
+not password protected url `http://host:port/manage_zhw` can simply used 
+(without blocking a zope thread!) for health checks by common known
+web frontends like nginx, varnish or haproxy. The availability of a
+zope server is encoded in the http response of the url:
+
+If the server is idle, it will return
+
+    $ curl  -I  http://localhost:8080/manage_zhw
+    HTTP/1.0 200 OK
+    ...
+
+If the server is busy, it will return
+
+    $ curl  -I  http://localhost:8080/manage_zhw
+    HTTP/1.0 404 Not Found
+    ...
+
+If the server has zombie threads, it will return
+
+    $ curl  -I  http://localhost:8080/manage_zhw
+    HTTP/1.0 500 Internal Server Error
+    ...
 
