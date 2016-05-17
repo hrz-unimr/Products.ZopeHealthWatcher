@@ -148,7 +148,7 @@ the health of the service hosted by each servers of a farm. Using the
 not password protected url `http://host:port/manage_zhw` can simply used 
 (without blocking a zope thread!) for health checks by common known
 web frontends like nginx, varnish or haproxy. The availability of a
-zope server is encoded in the http response of the url:
+zope server is encoded in the http response of the url::
 
 If the server is idle, it will return
 
