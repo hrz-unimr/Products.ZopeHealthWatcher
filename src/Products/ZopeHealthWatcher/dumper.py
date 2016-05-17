@@ -191,8 +191,7 @@ def match(self, request):
                                            threads=dump_threads(),
                                            msg=msg))
                 content_type = 'text/html'
-            # regular request with content
-            error_code = '200 OK'
+
             log.debug(page)
 
         request.channel.push('HTTP/1.0 %s\n' % (error_code,))
