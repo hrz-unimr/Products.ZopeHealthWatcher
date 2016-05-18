@@ -13,6 +13,9 @@ where the problem is located.
 
 You can monitor it through your browser or through a console script.
 
+In addition, your front-end servers can efficiently check the status (health checking) of 
+a Zope server without blocking the Zope application threads.
+
 `ZopeHealthWatcher` is based on `DeadlockDebugger` code,
 see http://plone.org/products/deadlockdebugger.
 
@@ -142,26 +145,26 @@ Beware that this URL is not password protected.
 health checking
 ---------------
 
-In general, before performing traffic by a load balancer forwarding to
-backend servers, it is recommended to tell the load balancer to check
-the health of the service hosted by each servers of a farm. Using the
+In general, before performing traffic by a front-end server (e.g. load balancer)
+forwarding to back-end Zope servers, it is recommended to tell the front-end server to check
+the health of the Zope threads hosted by each Zope server of a farm. The
 not password protected url `http://host:port/manage_zhw` can simply used 
-(without blocking a zope thread!) for health checks by common known
-web frontends like nginx, varnish or haproxy. The availability of a
-zope server is encoded in the http response of the url::
+without blocking a Zope thread for health checks by common known
+web front-end servers like nginx, varnish or haproxy. The availability of a
+Zope thread is encoded in the http response of the url::
 
-    If the server is idle, it will return
-    $ curl -I  http://localhost:8080/manage_zhw
+    If the server has idle Zope threads, it will return
+    $ curl -I http://localhost:8080/manage_zhw
     HTTP/1.0 200 OK
     ...
 
-    If the server is busy, it will return
-    $ curl -I  http://localhost:8080/manage_zhw
+    If the server is busy (all Zope threads are busy), it will return
+    $ curl -I http://localhost:8080/manage_zhw
     HTTP/1.0 404 Not Found
     ...
 
-    If the server has zombie threads, it will return
-    $ curl -I  http://localhost:8080/manage_zhw
+    If the server has zombie Zope threads or rather is in an undefined state, it will return
+    $ curl -I http://localhost:8080/manage_zhw
     HTTP/1.0 500 Internal Server Error
     ...
 
