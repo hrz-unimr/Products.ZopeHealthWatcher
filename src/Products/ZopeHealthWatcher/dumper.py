@@ -152,7 +152,11 @@ def match(self, request):
         busy_count = stats['busy_count']
         zombie_count = stats['zombie_count']
 
-        if total_threads:
+        if zombie_count > 0:
+            msg = 'CRITICAL - %s/%s thread(s) died unexpectedly\n' %\
+                (zombie_count, zombie_count + total_threads)
+            error_code = '500 Internal Server Error'
+        elif total_threads:
             if busy_count < total_threads:
                 msg = 'OK - %s/%s thread(s) are working (ready)' %\
                     (busy_count, total_threads)
@@ -161,10 +165,6 @@ def match(self, request):
                 msg = 'CRITICAL - %s/%s thread(s) are working (busy)' %\
                     (busy_count, total_threads)
                 error_code = '404 Not Found'
-        elif zombie_count > 0:
-            msg = 'CRITICAL - %s/%s thread(s) died unexpectedly\n' %\
-                (zombie_count, zombie_count + total_threads)
-            error_code = '500 Internal Server Error'
         else:
             msg = 'OK - zope is listening'
             error_code = '200 OK'
